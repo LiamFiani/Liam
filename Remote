@@ -1,0 +1,17 @@
+name: RustDesk Remote Desktop
+
+on:
+  workflow_dispatch:
+
+jobs:
+  rustdesk:
+    runs-on: windows-latest
+    timeout-minutes: 360
+
+    steps:
+    - name: Download RustDesk
+      run: |
+        Invoke-WebRequest -Uri "https://github.com/rustdesk/rustdesk/releases/latest/download/rustdesk-portable.exe" -OutFile "rustdesk.exe"
+
+    - name: Run RustDesk
+      run: Start-Process -FilePath ".\rustdesk.exe"
