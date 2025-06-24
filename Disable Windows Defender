@@ -1,0 +1,17 @@
+name: Disable Windows Defender
+
+on: workflow_dispatch
+
+jobs:
+  disable-defender:
+    runs-on: windows-latest
+
+    steps:
+    - name: Disable Real-Time Protection
+      shell: powershell
+      run: |
+        Set-MpPreference -DisableRealtimeMonitoring $true
+        Write-Host "Windows Defender real-time protection disabled."
+
+    - name: Run Your Python Script
+      run: python time.py
