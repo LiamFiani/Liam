@@ -7,13 +7,29 @@ jobs:
   connect:
     runs-on: windows-latest
     steps:
-      - name: Download and start RustDesk
+      - name: Download RustDesk
         run: |
-          Invoke-WebRequest -Uri "https://github.com/rustdesk/rustdesk/releases/download/1.4.0/rustdesk-1.4.0-x86_64.exe" -OutFile "rustdesk.exe"
-          Start-Process -FilePath ".\rustdesk.exe"
-          Start-Sleep -Seconds 20
+          $url = "https://github.com/rustdesk/rustdesk/releases/download/1.4.0/rustdesk-1.4.0-x86_64.exe"
+          Invoke-WebRequest -Uri $url -OutFile "rustdesk.exe"
 
-      - name: Show RustDesk Info
+      - name: Launch RustDesk
         run: |
-          Get-Content "$env:APPDATA\RustDesk\config\id"
-          Get-Content "$env:APPDATA\RustDesk\config\passwd"
+          Start-Process -FilePath ".\rustdesk.exe" -WindowStyle Hidden
+          Start-Sleep -Seconds 30
+
+      - name: Show RustDesk Connection Info
+        run: |
+          $configPath = "$env:APPDATA\RustDesk\config"
+          if (Test-Path "$configPath\id") {
+            Write-Host "RustDesk ID:"
+            Get-Content "$configPath\id"
+          } else {
+            Write-Host "RustDesk ID file not found."
+          }
+
+          if (Test-Path "$configPath\passwd") {
+            Write-Host "RustDesk Password:"
+            Get-Content "$configPath\passwd"
+          } else {
+            Write-Host "RustDesk password file not found."
+          }
