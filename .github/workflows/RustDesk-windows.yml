@@ -11,19 +11,20 @@ jobs:
         run: |
           Invoke-WebRequest -Uri "https://github.com/rustdesk/rustdesk/releases/download/1.4.0/rustdesk-1.4.0-x86_64.exe" -OutFile "rustdesk.exe"
 
-      - name: Launch RustDesk (headless)
+      - name: Launch RustDesk in background
         run: |
           Start-Process -FilePath ".\rustdesk.exe"
-          Write-Output "⏳ Waiting for RustDesk to initialize..."
+          Write-Output "⏳ Waiting for RustDesk to start and generate files..."
           Start-Sleep -Seconds 90
 
-      - name: Show RustDesk ID and Password
+      - name: Check all RustDesk paths
         run: |
-          $configDir = "$env:APPDATA\RustDesk\config"
+          $root = "$env:APPDATA\RustDesk"
+          $configDir = "$root\config"
           $idPath = "$configDir\id"
           $pwdPath = "$configDir\passwd"
 
-          Write-Output "`n📂 Checking config directory: $configDir"
+          Write-Output "`n📁 Looking in: $configDir"
 
           if (Test-Path $idPath) {
             Write-Output "`n🆔 RustDesk ID:"
@@ -38,3 +39,6 @@ jobs:
           } else {
             Write-Output "❌ RustDesk Password not found at $pwdPath"
           }
+
+          Write-Output "`n📂 Listing contents of $configDir:"
+          Get-ChildItem $configDir -Force | ForEach-Object { $_.FullName }
