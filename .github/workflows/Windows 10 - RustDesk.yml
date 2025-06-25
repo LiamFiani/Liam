@@ -1,35 +1,38 @@
-name: RustDesk Windows VM
+name: RustDesk Static ID Runner
 
 on:
   workflow_dispatch:
 
 jobs:
-  connect:
+  rustdesk:
     runs-on: windows-latest
     steps:
+      - name: Setup RustDesk Config Files
+        run: |
+          $configPath = "$env:APPDATA\RustDesk\config"
+          New-Item -ItemType Directory -Force -Path $configPath | Out-Null
+
+          # Static ID and password
+          "mygithubvm" | Out-File "$configPath\id" -Encoding ascii
+          "123456" | Out-File "$configPath\passwd" -Encoding ascii
+
+          # Optional: Configure your own RustDesk relay/rendezvous server here
+          @"
+relay=your.vps.ip:21117
+api_server=
+key=
+"@ | Out-File "$configPath\RustDesk2.toml" -Encoding ascii
+
       - name: Download RustDesk
         run: |
-          $url = "https://github.com/rustdesk/rustdesk/releases/download/1.4.0/rustdesk-1.4.0-x86_64.exe"
-          Invoke-WebRequest -Uri $url -OutFile "rustdesk.exe"
+          Invoke-WebRequest -Uri "https://github.com/rustdesk/rustdesk/releases/download/1.4.0/rustdesk-1.4.0-x86_64.exe" -OutFile "rustdesk.exe"
 
-      - name: Launch RustDesk
+      - name: Launch RustDesk (Headless)
         run: |
           Start-Process -FilePath ".\rustdesk.exe" -WindowStyle Hidden
           Start-Sleep -Seconds 30
 
-      - name: Show RustDesk Connection Info
+      - name: Confirm Config Files
         run: |
-          $configPath = "$env:APPDATA\RustDesk\config"
-          if (Test-Path "$configPath\id") {
-            Write-Host "RustDesk ID:"
-            Get-Content "$configPath\id"
-          } else {
-            Write-Host "RustDesk ID file not found."
-          }
-
-          if (Test-Path "$configPath\passwd") {
-            Write-Host "RustDesk Password:"
-            Get-Content "$configPath\passwd"
-          } else {
-            Write-Host "RustDesk password file not found."
-          }
+          Get-Content "$env:APPDATA\RustDesk\config\id"
+          Get-Content "$env:APPDATA\RustDesk\config\passwd"
