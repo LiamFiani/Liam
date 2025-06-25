@@ -1,31 +1,13 @@
-name: RustDesk Windows VM
+# REMOVE the lines that create the custom ID and password
+# Do NOT write to config\id or config\passwd
 
-on:
-  workflow_dispatch:
+- name: Start RustDesk
+  run: |
+    Invoke-WebRequest -Uri "https://github.com/rustdesk/rustdesk/releases/download/1.2.3/rustdesk-1.2.3-x86_64.exe" -OutFile "rustdesk.exe"
+    Start-Process -FilePath ".\rustdesk.exe"
+    Start-Sleep -Seconds 30
 
-jobs:
-  connect:
-    runs-on: windows-latest
-    steps:
-      - name: Set up static RustDesk ID and password
-        run: |
-          $configPath = "$env:APPDATA\RustDesk\config"
-          New-Item -ItemType Directory -Force -Path $configPath | Out-Null
-
-          # Set static ID and password
-          "mygithubvm" | Out-File "$configPath\id" -Encoding ascii
-          "123456" | Out-File "$configPath\passwd" -Encoding ascii
-
-      - name: Download RustDesk
-        run: |
-          Invoke-WebRequest -Uri "https://github.com/rustdesk/rustdesk/releases/download/1.2.3/rustdesk-1.2.3-x86_64.exe" -OutFile "rustdesk.exe"
-
-      - name: Start RustDesk silently
-        run: |
-          Start-Process -FilePath ".\rustdesk.exe" -WindowStyle Hidden
-          Start-Sleep -Seconds 30
-
-      - name: Show RustDesk ID and Password
-        run: |
-          Get-Content "$env:APPDATA\RustDesk\config\id"
-          Get-Content "$env:APPDATA\RustDesk\config\passwd"
+- name: Show Auto-generated ID
+  run: |
+    Get-ChildItem "$env:APPDATA\RustDesk\config"
+    Get-Content "$env:APPDATA\RustDesk\config\id"
