@@ -1,0 +1,36 @@
+name: RustDesk Windows VM
+
+on:
+  workflow_dispatch:
+
+jobs:
+  connect:
+    runs-on: windows-latest
+    steps:
+      - name: Set up static RustDesk ID and password
+        run: |
+          $configPath = "$env:APPDATA\RustDesk\config"
+          New-Item -ItemType Directory -Force -Path $configPath | Out-Null
+
+          # Set static ID and password
+          "mygithubvm" | Out-File "$configPath\id" -Encoding ascii
+          "123456" | Out-File "$configPath\passwd" -Encoding ascii
+
+          # Optional: Use your own RustDesk relay/rendezvous server (update below)
+          @"
+relay=your.vps.ip:21117
+"@ | Out-File "$configPath\RustDesk2.toml" -Encoding ascii
+
+      - name: Download RustDesk
+        run: |
+          Invoke-WebRequest -Uri "https://github.com/rustdesk/rustdesk/releases/download/1.4.0/rustdesk-1.4.0-x86_64.exe" -OutFile "rustdesk.exe"
+
+      - name: Start RustDesk silently
+        run: |
+          Start-Process -FilePath ".\rustdesk.exe" -WindowStyle Hidden
+          Start-Sleep -Seconds 30
+
+      - name: Show RustDesk ID and Password
+        run: |
+          Get-Content "$env:APPDATA\RustDesk\config\id"
+          Get-Content "$env:APPDATA\RustDesk\config\passwd"
