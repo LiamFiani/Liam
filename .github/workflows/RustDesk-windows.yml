@@ -1,13 +1,36 @@
-# REMOVE the lines that create the custom ID and password
-# Do NOT write to config\id or config\passwd
+name: RustDesk Windows VM
 
-- name: Start RustDesk
-  run: |
-    Invoke-WebRequest -Uri "https://github.com/rustdesk/rustdesk/releases/download/1.2.3/rustdesk-1.2.3-x86_64.exe" -OutFile "rustdesk.exe"
-    Start-Process -FilePath ".\rustdesk.exe"
-    Start-Sleep -Seconds 30
+on:
+  workflow_dispatch:
 
-- name: Show Auto-generated ID
-  run: |
-    Get-ChildItem "$env:APPDATA\RustDesk\config"
-    Get-Content "$env:APPDATA\RustDesk\config\id"
+jobs:
+  connect:
+    runs-on: windows-latest
+    steps:
+      - name: Download RustDesk v1.4.0
+        run: |
+          Invoke-WebRequest -Uri "https://github.com/rustdesk/rustdesk/releases/download/1.4.0/rustdesk-1.4.0-x86_64.exe" -OutFile "rustdesk.exe"
+
+      - name: Launch RustDesk
+        run: |
+          Start-Process -FilePath ".\rustdesk.exe"
+          Start-Sleep -Seconds 60  # Give it time to start and generate config
+
+      - name: Output RustDesk ID and Password
+        run: |
+          $idPath = "$env:APPDATA\RustDesk\config\id"
+          $pwdPath = "$env:APPDATA\RustDesk\config\passwd"
+
+          if (Test-Path $idPath) {
+            Write-Output "`n🆔 RustDesk ID:"
+            Get-Content $idPath
+          } else {
+            Write-Output "❌ RustDesk ID not found."
+          }
+
+          if (Test-Path $pwdPath) {
+            Write-Output "`n🔒 RustDesk Password:"
+            Get-Content $pwdPath
+          } else {
+            Write-Output "❌ RustDesk Password not found."
+          }
