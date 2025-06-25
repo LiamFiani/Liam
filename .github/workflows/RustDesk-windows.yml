@@ -14,17 +14,17 @@ jobs:
       - name: Launch RustDesk in background
         run: |
           Start-Process -FilePath ".\rustdesk.exe"
-          Write-Output "⏳ Waiting for RustDesk to start and generate files..."
+          Write-Output "⏳ Waiting for RustDesk to start and generate config files..."
           Start-Sleep -Seconds 90
 
-      - name: Check all RustDesk paths
+      - name: Output RustDesk ID and Password
         run: |
           $root = "$env:APPDATA\RustDesk"
           $configDir = "$root\config"
           $idPath = "$configDir\id"
           $pwdPath = "$configDir\passwd"
 
-          Write-Output "`n📁 Looking in: $configDir"
+          Write-Output "`n📁 Checking config path: $configDir"
 
           if (Test-Path $idPath) {
             Write-Output "`n🆔 RustDesk ID:"
@@ -40,5 +40,5 @@ jobs:
             Write-Output "❌ RustDesk Password not found at $pwdPath"
           }
 
-          Write-Output "`n📂 Listing contents of $configDir:"
+          Write-Output "`n📂 Listing contents of ${configDir}:"
           Get-ChildItem $configDir -Force | ForEach-Object { $_.FullName }
